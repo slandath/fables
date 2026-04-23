@@ -3,7 +3,6 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
-
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -11,6 +10,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.0.0",
+    "esbuild": "^0.25.12",
     "eslint": "^9.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0"

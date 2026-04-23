@@ -15,7 +15,6 @@ export const notes = pgTable(
   table => [
     index('notes_owner_id_idx').on(table.ownerId),
     index('notes_campaign_id_idx').on(table.campaignId),
-    index('notes_searchable_idx').using('gin', table.searchableText),
   ],
 )
 

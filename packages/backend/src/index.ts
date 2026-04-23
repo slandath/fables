@@ -18,7 +18,7 @@ async function start() {
     await fastify.register(noteRoutes, { prefix: '/api/notes' })
     await fastify.register(authRoutes, { prefix: '/api/auth' })
 
-    const port = Number.parseInt(import.meta.env.PORT ?? '3001', 10)
+    const port = Number.parseInt(process.env.PORT ?? '3001', 10)
     await fastify.listen({ port, host: '0.0.0.0' })
   }
   catch (err) {

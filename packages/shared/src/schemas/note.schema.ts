@@ -20,56 +20,117 @@ export const tipTapDocSchema: z.ZodType<import('../types').TipTapDoc> = z.object
   content: z.array(tipTapNodeSchema),
 })
 
-export const createNoteSchema = z.object({
-  title: z.string().min(1).max(200),
-  content: tipTapDocSchema,
-  campaignId: z.string().uuid().nullable().optional(),
-})
+const tipTapDocJsonSchema = {
+  type: 'object',
+  required: ['type', 'content'],
+  properties: {
+    type: { type: 'string', const: 'doc' },
+    content: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          type: { type: 'string' },
+          attrs: { type: 'object' },
+          content: { type: 'array' },
+          marks: { type: 'array' },
+          text: { type: 'string' },
+        },
+      },
+    },
+  },
+} as const
 
-export const updateNoteSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string().min(1).max(200).optional(),
-  content: tipTapDocSchema.optional(),
-})
+export const createNoteSchema = {
+  type: 'object',
+  required: ['title', 'content'],
+  properties: {
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    content: tipTapDocJsonSchema,
+    campaignId: { type: ['string', 'null'], format: 'uuid' },
+  },
+} as const
 
-export const noteResponseSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string(),
-  content: tipTapDocSchema,
-  campaignId: z.string().uuid().nullable(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-})
+export const updateNoteSchema = {
+  type: 'object',
+  required: ['id'],
+  properties: {
+    id: { type: 'string', format: 'uuid' },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    content: tipTapDocJsonSchema,
+  },
+} as const
 
-export const noteListResponseSchema = z.array(noteResponseSchema)
+export const noteResponseSchema = {
+  type: 'object',
+  required: ['id', 'title', 'content', 'createdAt', 'updatedAt'],
+  properties: {
+    id: { type: 'string', format: 'uuid' },
+    title: { type: 'string' },
+    content: tipTapDocJsonSchema,
+    campaignId: { type: ['string', 'null'], format: 'uuid' },
+    createdAt: { type: 'string', format: 'date-time' },
+    updatedAt: { type: 'string', format: 'date-time' },
+  },
+} as const
 
-export const searchNotesQuerySchema = z.object({
-  q: z.string().min(1),
-  limit: z.coerce.number().min(1).max(100).default(20),
-  offset: z.coerce.number().min(0).default(0),
-})
+export const noteListResponseSchema = {
+  type: 'array',
+  items: noteResponseSchema,
+}
 
-export const syncRequestSchema = z.object({
-  notes: z.array(
-    z.object({
-      id: z.string().uuid(),
-      title: z.string(),
-      content: tipTapDocSchema,
-      campaignId: z.string().uuid().nullable(),
-      createdAt: z.string().datetime(),
-      updatedAt: z.string().datetime(),
-    }),
-  ),
-  lastSyncedAt: z.string().datetime().nullable().optional(),
-})
+export const searchNotesQuerySchema = {
+  type: 'object',
+  required: [],
+  properties: {
+    q: { type: 'string', minLength: 1 },
+    limit: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+    offset: { type: 'number', minimum: 0, default: 0 },
+  },
+} as const
 
-export const syncResponseSchema = z.object({
-  notes: z.array(noteResponseSchema),
-  conflicts: z.array(
-    z.object({
-      id: z.string().uuid(),
-      serverVersion: noteResponseSchema,
-      localVersion: noteResponseSchema,
-    }),
-  ),
-})
+export const syncRequestSchema = {
+  type: 'object',
+  required: ['notes'],
+  properties: {
+    notes: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', 'title', 'content', 'createdAt', 'updatedAt'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          title: { type: 'string' },
+          content: tipTapDocJsonSchema,
+          campaignId: { type: ['string', 'null'], format: 'uuid' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+    },
+    lastSyncedAt: { type: ['string', 'null'], format: 'date-time' },
+  },
+} as const
+
+export const syncResponseSchema = {
+  type: 'object',
+  required: ['notes', 'conflicts'],
+  properties: {
+    notes: {
+      type: 'array',
+      items: noteResponseSchema,
+    },
+    conflicts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', 'serverVersion', 'localVersion'],
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          serverVersion: noteResponseSchema,
+          localVersion: noteResponseSchema,
+        },
+      },
+    },
+  },
+} as const

@@ -1,4 +1,6 @@
 import type { FastifyInstance } from 'fastify'
+import { db } from '../db'
+import { notes } from '../db/schema'
 
 export async function healthRoutes(fastify: FastifyInstance) {
   fastify.get('/health', async () => {
@@ -6,6 +8,13 @@ export async function healthRoutes(fastify: FastifyInstance) {
   })
 
   fastify.get('/ready', async () => {
-    return { status: 'ready', timestamp: new Date().toISOString() }
+    try {
+      await db.select().from(notes).limit(1)
+      return { status: 'ready', timestamp: new Date().toISOString() }
+    }
+    catch (err) {
+      console.error('DB Error:', err)
+      throw err
+    }
   })
 }
