@@ -34,6 +34,8 @@ function extractSearchableText(content: unknown): string {
   return extract(content).trim()
 }
 
+export { extractSearchableText }
+
 function unauthorized(reply: FastifyReply, message = 'Unauthorized') {
   return reply.code(401).send({ error: message })
 }
