@@ -40,4 +40,18 @@ export interface SyncStatus {
   isOnline: boolean
 }
 
+export interface AppError {
+  code: string
+  message: string
+  statusCode: number
+  details?: unknown
+}
+
+export interface FastifyRequest {
+  session?: {
+    user: { id: string; email: string; name?: string; image?: string }
+    session: { id: string; expiresAt: Date}
+  }
+}
+
 export type NotePreview = Pick<Note, 'id' | 'title' | 'updatedAt'>

@@ -9,6 +9,7 @@ import {
 import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { notes } from '../db/schema.js'
+import { requireAuth } from '../middleware/auth.js'
 
 type CreateNoteInput = z.infer<typeof createNoteSchema>
 type UpdateNoteInput = z.infer<typeof updateNoteSchema>
@@ -45,9 +46,11 @@ function notFound(reply: FastifyReply, message = 'Not Found') {
 }
 
 export async function noteRoutes(fastify: FastifyInstance) {
+  fastify.addHook('preHandler', requireAuth)
+
   fastify.get('/', { schema: { querystring: searchNotesQuerySchema } }, async (request, reply) => {
     const { q, limit, offset } = request.query as z.infer<typeof searchNotesQuerySchema>
-    const userId = request.headers['x-user-id'] as string
+    const userId = request.session?.user.id
 
     if (!userId) {
       return unauthorized(reply, 'User ID required')
@@ -79,7 +82,7 @@ export async function noteRoutes(fastify: FastifyInstance) {
 
   fastify.get('/:id', async (request, reply) => {
     const { id } = request.params as { id: string }
-    const userId = request.headers['x-user-id'] as string
+    const userId = request.session?.user.id
 
     if (!userId) {
       return unauthorized(reply, 'User ID required')
@@ -96,7 +99,7 @@ export async function noteRoutes(fastify: FastifyInstance) {
 
   fastify.post('/', { schema: { body: createNoteSchema } }, async (request, reply) => {
     const data = request.body as CreateNoteInput
-    const userId = request.headers['x-user-id'] as string
+    const userId = request.session?.user.id
 
     if (!userId) {
       return unauthorized(reply, 'User ID required')
@@ -122,7 +125,7 @@ export async function noteRoutes(fastify: FastifyInstance) {
   fastify.patch('/:id', { schema: { body: updateNoteSchema } }, async (request, reply) => {
     const { id } = request.params as { id: string }
     const data = request.body as UpdateNoteInput
-    const userId = request.headers['x-user-id'] as string
+    const userId = request.session?.user.id
 
     if (!userId) {
       return unauthorized(reply, 'User ID required')
@@ -152,7 +155,7 @@ export async function noteRoutes(fastify: FastifyInstance) {
 
   fastify.delete('/:id', async (request, reply) => {
     const { id } = request.params as { id: string }
-    const userId = request.headers['x-user-id'] as string
+    const userId = request.session?.user.id
 
     if (!userId) {
       return unauthorized(reply, 'User ID required')
@@ -170,7 +173,7 @@ export async function noteRoutes(fastify: FastifyInstance) {
 
   fastify.post('/sync', { schema: { body: syncRequestSchema } }, async (request, reply) => {
     const { notes: localNotes, lastSyncedAt: _lastSyncedAt } = request.body as SyncRequestInput
-    const userId = request.headers['x-user-id'] as string
+    const userId = request.session?.user.id
 
     if (!userId) {
       return unauthorized(reply, 'User ID required')

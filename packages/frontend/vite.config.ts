@@ -1,7 +1,6 @@
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import { VueResolver } from 'unplugin-vue-components/resolvers'
 import AutoImport from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -11,9 +10,9 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 export default defineConfig({
   plugins: [
     vue(),
-    AutoImport({
-      resolvers: [VueResolver()],
-    }),
+    // AutoImport({
+    //   resolvers: [VueResolver()],
+    // }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],

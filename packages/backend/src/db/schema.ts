@@ -8,7 +8,7 @@ export const notes = pgTable(
     content: jsonb('content').notNull(),
     searchableText: text('searchable_text'),
     campaignId: uuid('campaign_id'),
-    ownerId: text('owner_id').notNull(),
+    ownerId: uuid('owner_id').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
@@ -23,7 +23,7 @@ export const campaigns = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
-    ownerId: text('owner_id').notNull(),
+    ownerId: uuid('owner_id').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },

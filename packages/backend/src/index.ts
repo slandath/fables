@@ -3,6 +3,7 @@ import Fastify from 'fastify'
 import { authRoutes } from './routes/auth.js'
 import { healthRoutes } from './routes/health.js'
 import { noteRoutes } from './routes/notes.js'
+import { errorHandler } from './lib/error-handler.js'
 
 const fastify = Fastify({
   logger: true,
@@ -10,8 +11,10 @@ const fastify = Fastify({
 
 async function start() {
   try {
+    fastify.setErrorHandler(errorHandler)
     await fastify.register(cors, {
       origin: true,
+      credentials: true,
     })
 
     await fastify.register(healthRoutes)
@@ -20,6 +23,9 @@ async function start() {
 
     const port = Number.parseInt(process.env.PORT ?? '3001', 10)
     await fastify.listen({ port, host: '0.0.0.0' })
+
+    fastify.log.info(`Server running on port ${port}`)
+  
   }
   catch (err) {
     fastify.log.error(err)

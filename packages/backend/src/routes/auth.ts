@@ -1,22 +1,56 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { fromNodeHeaders } from 'better-auth/node'
+import { auth } from '../auth/auth'
+import { errorHandler } from '../lib/error-handler'
 
 export async function authRoutes(fastify: FastifyInstance) {
-  fastify.get('/', async () => {
-    return { message: 'Auth endpoint - to be implemented with BetterAuth' }
+  fastify.route({
+    method: ['GET', 'POST'],
+    url: '/*',
+    handler: async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const url = new URL(request.url, `http://${request.headers.host}`)
+        const req = new Request(url.toString(), {
+          method: request.method,
+          headers: fromNodeHeaders(request.headers),
+          body: request.body ? JSON.stringify(request.body) : undefined,
+        })
+        const response = await auth.handler(req)
+        reply.status(response.status)
+        response.headers.forEach((value, key) => reply.header(key, value))
+        return reply.send(response.body ? await response.text() : null)
+      }
+      catch (error) {
+        errorHandler(error, request, reply)
+      }
+    }
   })
 
-  fastify.get('/session', async (request) => {
-    const userId = request.headers['x-user-id'] as string
-    if (!userId) {
-      return { session: null }
+  fastify.get('/session', async (request, reply) => {
+    try {
+      const headers = fromNodeHeaders(request.headers)
+      const session = await auth.api.getSession({headers})
+      if (!session) {
+        return reply.status(401).send({
+          error: { code: 'UNAUTHORIZED', message: 'No active session' }
+        })
+      }
+      return { session }
     }
-    return {
-      session: {
-        user: {
-          id: userId,
-          email: 'user@example.com',
-        },
-      },
+    catch (error) {
+      errorHandler(error, request, reply)
+    }
+  })
+
+  fastify.post('/sign-out', async (request, reply) => {
+    try {
+      const headers = fromNodeHeaders(request.headers)
+      await auth.api.signOut({headers})
+      reply.header('Set-Cookie', 'better-auth.session=; Max-Age=0; Path=/; HttpOnly')
+      return reply.redirect('/auth/error?error=signed_out&message=You have been signed out')
+    }
+    catch (error) {
+      errorHandler(error, request, reply)
     }
   })
 }
