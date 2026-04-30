@@ -11,16 +11,24 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@nuxt/ui": "^4.7.1",
+    "better-auth": "^1.6.9",
+    "drizzle-orm": "^0.45.2",
     "nuxt": "^4.4.2",
+    "pg": "^8.20.0",
     "tailwindcss": "^4.2.4",
     "vue": "^3.5.33",
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
     "oxfmt": "^0.47.0",
     "oxlint": "^1.62.0"
   }
